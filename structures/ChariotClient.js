@@ -6,6 +6,7 @@ const Event             = require('../structures/ChariotEvent');
 const Collection        = require('../helpers/Collection');
 const Logger            = require('../helpers/Logger');
 const MessageHandler    = require('../handlers/MessageHandler');
+const InteractionHandler= require('../handlers/InteractionHandler');
 const Constants         = require('../constants/General');
 
 /**
@@ -36,15 +37,13 @@ class ChariotClient extends Eris.Client {
         this.events         = new Set();
         this.commands       = new Collection();
         this.messageHandler = new MessageHandler(this);
+        this.interactionHandler = new InteractionHandler(this);
 
         this.commandFiles   = [];
         this.eventFiles     = [];
 
-        this._registerInternalCommands();
-        this._registerChariotCommands();
-        this._registerChariotEvents();
         this._addEventListeners();
-        this.connect();
+        this.connect()
     }
 
     /**
@@ -53,6 +52,7 @@ class ChariotClient extends Eris.Client {
     _addEventListeners() {
         this.on('ready', this._readyEmitter);
         this.on('messageCreate', this._runMessageOperators);
+        this.on('interactionCreate', this._interactionListener);
     }
 
     /**
@@ -136,6 +136,9 @@ class ChariotClient extends Eris.Client {
      * successfully logged in to Discord and is now ready to listen to events.
      */
     _readyEmitter() {
+        this._registerInternalCommands();
+        this._registerChariotCommands();
+        this._registerChariotEvents();
         Logger.success('CHARIOT STARTUP', 'Successfully started and logged in!');
     }
 
@@ -146,6 +149,14 @@ class ChariotClient extends Eris.Client {
             if (this.commands.find(commandName => commandName.name === defaultHelpCommand.name)) {
                 throw new Error(`Default help command couldn't be initialized because another command with the same name already exists!`);
             }
+
+            this.createCommand({
+                name: defaultHelpCommand.name,
+                description: defaultHelpCommand.description || "No description",
+                options: defaultHelpCommand.options,
+                defaultPermission: defaultHelpCommand.defaultPermission || false,
+                type: 1
+            });
 
             this.commands.set(defaultHelpCommand.name, defaultHelpCommand);
         }
@@ -204,6 +215,12 @@ class ChariotClient extends Eris.Client {
         Logger.success('EVENTS', `Successfully loaded ${this.events.size} ${(this.events.size === 1) ? 'event' : 'events'}`);
     }
 
+    _interactionListener(interaction) {
+        if (interaction.type === 2) {
+            this.interactionHandler.handle(interaction, this.commands);
+        }
+    }
+
     /**
      * Register all Chariot commands extending the abstract Command class, no matter where commands are saved without providing any path.
      * @async
@@ -228,6 +245,8 @@ class ChariotClient extends Eris.Client {
         
         this.commandFiles = readFiles.map(file => file.path);
 
+        let cmds = [];
+
         for (const chariotCommandFile of this.commandFiles) {
             let chariotCommand = require(path.join(directory, chariotCommandFile));
 
@@ -240,9 +259,19 @@ class ChariotClient extends Eris.Client {
             }
 
             if (chariotCommand instanceof Command) {
+                cmds.push({
+                    name: chariotCommand.name,
+                    description: chariotCommand.description || "No description",
+                    options: chariotCommand.options,
+                    defaultPermission: chariotCommand.defaultPermission || false,
+                    type: chariotCommand.type
+                });
+                
                 this.commands.set(chariotCommand.name, chariotCommand);
             }
         }
+
+        this.bulkEditCommands(cmds)
 
         Logger.success('COMMANDS', `Successfully loaded ${this.commands.size} ${(this.commands.size === 1) ? 'command' : 'commands'}`);
     }
