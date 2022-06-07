@@ -51,7 +51,7 @@ class ChariotHelp {
                 let em = new Embed()
                     .setColor('RED')
                     .setDescription(`Unfortunately command **${foundCommand.name}** has no integrated help text yet.`);
-                return interaction.createMessage(em);
+                return interaction.createMessage({ embed: em });
             }
 
             const helpEmbed = new Embed();
