@@ -9,7 +9,6 @@ class ChariotHelp {
         this.allowDMs = true;
         this.description = "A menu to get help on the bot's commands";
         this.defaultPermission = true;
-        this.ephemeral = true;
         this.help = {
             message: 'Get either a general Help card or instructions for specified commands! Specifying a command is optional. If a command was specified its help text will show up.',
             usage: 'help [command]',
@@ -44,14 +43,14 @@ class ChariotHelp {
                 let em = new Embed()
                     .setColor('RED')
                     .setTitle(`Couldn't find command **${data.options[0].value}**!`);
-                return interaction.createMessage({ embed: em });
+                return interaction.createMessage({ embed: em, flags: 64 });
             }
 
             if (foundCommand && !foundCommand.help) {
                 let em = new Embed()
                     .setColor('RED')
                     .setDescription(`Unfortunately command **${foundCommand.name}** has no integrated help text yet.`);
-                return interaction.createMessage({ embed: em });
+                return interaction.createMessage({ embed: em, flags: 64 });
             }
 
             const helpEmbed = new Embed();
