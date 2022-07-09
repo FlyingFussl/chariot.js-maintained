@@ -264,7 +264,7 @@ class ChariotClient extends Eris.Client {
                         name: chariotCommand.name,
                         description: chariotCommand.description || "No description",
                         options: chariotCommand.options,
-                        defaultPermission: chariotCommand.defaultPermission || false,
+                        defaultPermission: chariotCommand.hasOwnProperty("defaultPermission") ? chariotCommand.defaultPermission : true, // "defaultPermission" true by default
                         type: chariotCommand.type
                     });
                 };
