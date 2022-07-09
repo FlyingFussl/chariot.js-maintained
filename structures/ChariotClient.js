@@ -42,6 +42,7 @@ class ChariotClient extends Eris.Client {
         this.commandFiles   = [];
         this.eventFiles     = [];
 
+        this._registerChariotEvents();
         this._addEventListeners();
         this.connect()
     }
@@ -138,7 +139,6 @@ class ChariotClient extends Eris.Client {
     _readyEmitter() {
         this._registerInternalCommands();
         this._registerChariotCommands();
-        this._registerChariotEvents();
         Logger.success('CHARIOT STARTUP', 'Successfully started and logged in!');
     }
 
