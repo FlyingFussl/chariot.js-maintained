@@ -259,13 +259,15 @@ class ChariotClient extends Eris.Client {
             }
 
             if (chariotCommand instanceof Command) {
-                cmds.push({
-                    name: chariotCommand.name,
-                    description: chariotCommand.description || "No description",
-                    options: chariotCommand.options,
-                    defaultPermission: chariotCommand.defaultPermission || false,
-                    type: chariotCommand.type
-                });
+                if (chariotCommand.hasOwnProperty("type")) { // Message Command compatibility, only register as slash command if "type" property returns true
+                    cmds.push({
+                        name: chariotCommand.name,
+                        description: chariotCommand.description || "No description",
+                        options: chariotCommand.options,
+                        defaultPermission: chariotCommand.defaultPermission || false,
+                        type: chariotCommand.type
+                    });
+                };
                 
                 this.commands.set(chariotCommand.name, chariotCommand);
             }
