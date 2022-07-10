@@ -30,6 +30,9 @@ class MessageHandler {
 
         /* Stop handling if no command was found */
         if (!command) return;
+        
+        /* Prompt user to use Slash-Command if available */
+        if (typeof command.slash === 'function') return message.channel.createMessage(`${message.author.mention}, this command has a Slash-Command version. Please use the Slash-Command instead!`);
 
         /* Check if it is a DM */
         if (message.channel.type !== 0 && !command.allowDMs) return;
